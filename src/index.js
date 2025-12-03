@@ -21,7 +21,7 @@ app.use('/api/tma', tmaRoutes);
 // Корневой маршрут (Тест CI/CD)
 app.get('/', (req, res) => {
   res.json({
-    message: '✅ TMA-ERP API работает, и CI/CD настроен!',
+    message: '✅ TMA-ERP API работает, и CI/CD настроен!!!!',
     version: '1.0.0',
     timestamp: new Date().toISOString()
   });
@@ -37,3 +37,4 @@ app.listen(PORT, () => {
   console.log('✅ Успешное подключение к PostgreSQL'); // Это сообщение оставим, предполагая, что подключение успешно
   console.log(`🎉 TMA-ERP API запущен на порту ${PORT}`);
 });
+// Final check for Git push
