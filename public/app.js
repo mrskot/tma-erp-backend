@@ -3,7 +3,7 @@
 // =========================================================
 
 const tg = window.Telegram.WebApp;
-const API_BASE_URL = window.location.origin + '/api/v1'; 
+const API_BASE_URL = 'http://212.193.27.144:3000/api/v1'; 
 
 let userState = {
     isAuthenticated: false,
