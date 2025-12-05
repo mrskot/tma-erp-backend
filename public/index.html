@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMA-ERP: Панель управления производством</title>
+    
+    <link rel="stylesheet" href="styles.css?v=20251205_1515"> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> 
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="app.js?v=20251205_1515"></script>
+</head>
+<body>
+
+    <header>
+        <h1>TMA-ERP</h1>
+        <div id="user-info" style="display:none;">
+            <div class="user-details">
+                <p>Роль: <span id="role-display"></span></p>
+                <p>Участок: <span id="section-display">Не назначен</span></p>
+            </div>
+            <button type="button" class="btn btn-logout btn-sm" onclick="logout()">Выход</button>
+        </div>
+    </header>
+
+    <main>
+        
+        <div id="pin-auth-panel" class="panel-section panel">
+            <h2>🔑 Вход по PIN-коду</h2>
+            <p class="subtle-info main">Введите ваш ID и PIN-код.</p>
+            
+            <form id="pin-form">
+                <div class="form-group">
+                    <label for="telegram-id-input">Ваш Telegram ID:</label>
+                    <input type="text" id="telegram-id-input" placeholder="Введите ваш ID (число)" required inputmode="numeric">
+                    <p class="subtle-info">Используется, если автоматический ID не определяется (например, при проблемах с VPN).</p>
+                </div>
+                <div class="form-group">
+                    <label for="pin-input">PIN-код (4 цифры):</label>
+                    <input type="password" id="pin-input" placeholder="****" required pattern="\d{4,4}" maxlength="4" inputmode="numeric">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="margin-top: 20px; width: 100%;">Войти</button>
+            </form>
+            <div id="pin-message" class="alert" style="display:none; margin-top: 10px;"></div>
+        </div>
+
+        <div id="admin-panel" class="panel-section panel" style="display:none;">
+            <h2 id="admin-title-display">👑 Панель Администратора</h2>
+            <p class="subtle-info main">Ваш Telegram ID: <span id="admin-tg-id-display">ID получен сервером</span></p>
+
+            <h3>⚙️ Управление</h3>
+            <div class="card-grid">
+                <div class="card card-action" data-target="add-user-section">
+                    <strong>Пользователи</strong>
+                    <span class="subtle-info">Назначение ролей и PIN</span>
+                </div>
+                <div class="card card-action" data-target="add-section-panel">
+                    <strong>Участки</strong>
+                    <span class="subtle-info">Добавление/удаление/редактирование</span>
+                </div>
+                <div class="card card-action" data-target="add-pf-panel">
+                    <strong>Типы ПФ</strong>
+                    <span class="subtle-info">Изделия и полуфабрикаты</span>
+                </div>
+            </div>
+            
+            <h3>📝 Мониторинг</h3>
+            <div class="card-grid">
+                <div class="card card-action card-success" data-target="create-request-section">
+                    <strong>Создать Заявку (Тест)</strong>
+                    <span class="subtle-info">Проверить рабочий флоу</span>
+                </div>
+                <div class="card card-action" data-target="stats-panel">
+                    <strong>Статистика</strong>
+                    <span class="subtle-info">Просмотр прогресса и отчетов</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-user-section" class="panel-section panel" style="display:none;">
+            <h2>👤 Управление Пользователями</h2>
+            
+            <h3>➕ Добавить нового</h3>
+            <form id="add-user-form">
+                <div class="form-group">
+                    <label for="user-role">Роль:</label>
+                    <select id="user-role" required class="role-select">
+                        <option value="master">Мастер</option>
+                        <option value="otk">ОТК</option>
+                        <option value="admin">Администратор</option>
+                        <option value="super_admin">Супер Администратор</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="user-section">Участок:</label>
+                    <select id="user-section" class="section-select">
+                        </select>
+                    <p class="subtle-info">Мастер/ОТК привязывается к участку.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-pin-input">PIN-код (4 цифры):</label>
+                    <input type="text" id="user-pin-input" placeholder="Введите PIN для первого входа" required pattern="\d{4,4}" maxlength="4" inputmode="numeric">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Добавить Пользователя</button>
+            </form>
+            <div id="add-user-message" class="alert" style="display:none; margin-top: 10px;"></div>
+
+            <h3>📋 Активные пользователи</h3>
+            <div id="users-card-list" class="card-list">
+                </div>
+        </div>
+
+        <div id="add-section-panel" class="panel-section panel" style="display:none;">
+            <h2>🏢 Управление Участками</h2>
+            
+            <h3>➕ Добавить новый участок</h3>
+            <form id="add-section-form">
+                <div class="form-group">
+                    <label for="section-name-input">Название участка:</label>
+                    <input type="text" id="section-name-input" placeholder="Например: Цех 1.1, Сборка" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Добавить Участок</button>
+            </form>
+            <div id="add-section-message" class="alert" style="display:none; margin-top: 10px;"></div>
+
+            <h3>📋 Список участков</h3>
+            <div id="sections-card-list" class="card-list">
+                </div>
+        </div>
+
+        <div id="edit-section-panel" class="panel-section panel" style="display:none;">
+            <h2>✏️ Редактировать Участок</h2>
+            <form id="edit-section-form">
+                <input type="hidden" id="edit-section-id">
+                <div class="form-group">
+                    <label for="edit-section-name">Название участка:</label>
+                    <input type="text" id="edit-section-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-section-master">Назначить Мастера:</label>
+                    <select id="edit-section-master" class="master-select">
+                        <option value="">Не назначен</option>
+                        </select>
+                    <p class="subtle-info">Выбор Мастера автоматически отвяжет его от старого участка (если был).</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Сохранить Изменения</button>
+            </form>
+            <div id="edit-section-message" class="alert" style="display:none; margin-top: 10px;"></div>
+        </div>
+        
+        <div id="add-pf-panel" class="panel-section panel" style="display:none;">
+            <h2>➕ Добавить Тип ПФ / Изделия (Заглушка)</h2>
+            <p>Эта панель будет содержать форму для добавления новых типов полуфабрикатов или изделий.</p>
+        </div>
+
+        <div id="stats-panel" class="panel-section panel" style="display:none;">
+            <h2>📊 Статистика Заявок</h2>
+            
+            <div class="card-grid">
+                <div class="card card-action">Все заявки</div>
+                <div class="card card-action">В работе / На проверке</div>
+                <div class="card card-action">Принято сегодня</div>
+            </div>
+            
+            <div id="stats-results" style="margin-top: 20px;">
+                Загрузка...
+            </div>
+        </div>
+
+        <div id="create-request-section" class="panel-section panel" style="display:none;">
+            <h2>📝 Создание Заявки (Тест)</h2>
+            <p>Эта панель будет использоваться Мастерами для создания заявок.</p>
+        </div>
+
+        <div id="main-panel" class="panel-section panel" style="display:none;">
+            <h2>🛠️ Ваши Заявки</h2>
+            <div id="requests-list">
+                </div>
+            <p style="margin-top: 20px;">*Здесь будет логика отображения заявок, доступная Мастеру/ОТК.</p>
+        </div>
+
+    </main>
+    
+    <div id="fixed-back-button" class="fixed-back-button" style="display: none;">
+        <button type="button" class="btn btn-secondary" onclick="showPanel('admin-panel')">← Назад к панели управления</button>
+    </div>
+
+    <footer>
+        <p>Разработано для TMA-ERP</p>
+    </footer>
+</body>
+</html>

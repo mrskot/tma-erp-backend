@@ -21,7 +21,7 @@ app.use('/api/tma', tmaRoutes);
 // Корневой маршрут (Тест CI/CD)
 app.get('/', (req, res) => {
   res.json({
-    message: '🎉 TMA-ERP CI/CD работает и стабилен!',
+    message: '🎉 TMA-ERP CI/CD работает и стабилен!учше',
     version: '1.0.0',
     timestamp: new Date().toISOString()
   });

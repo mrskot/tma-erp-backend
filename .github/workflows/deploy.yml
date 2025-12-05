@@ -34,7 +34,18 @@ jobs:
             # Установка новых зависимостей (если package.json изменился)
             npm install --silent
             
+            # *** ОЧЕНЬ ВАЖНО: Запуск миграций перед перезапуском! ***
+            echo "Running database migrations..."
+            npx knex migrate:latest
+
             # Перезапускаем PM2 для применения изменений
             pm2 restart tma-erp
             
             echo "Deployment to VPS successful!"
+
+            # Установка новых зависимостей (если package.json изменился)
+            npm install --silent
+            
+
+            
+# ...
